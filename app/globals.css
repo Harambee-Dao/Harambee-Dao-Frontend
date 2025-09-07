@@ -1,0 +1,328 @@
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Avenir+Next:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Harambee DAO Design System Colors */
+  --deep-green: #1A3A2F;
+  --camel: #C19A6B;
+  --khaki: #C3B091;
+  --ivory: #FFFFF0;
+  
+  /* Legacy color tokens for compatibility */
+  --background: var(--ivory);
+  --foreground: var(--deep-green);
+  --card: var(--camel);
+  --card-foreground: var(--deep-green);
+  --popover: var(--khaki);
+  --popover-foreground: var(--deep-green);
+  --primary: var(--deep-green);
+  --primary-foreground: var(--ivory);
+  --secondary: var(--camel);
+  --secondary-foreground: var(--deep-green);
+  --muted: var(--khaki);
+  --muted-foreground: var(--deep-green);
+  --accent: var(--camel);
+  --accent-foreground: var(--deep-green);
+  --destructive: oklch(0.55 0.25 25);
+  --destructive-foreground: var(--ivory);
+  --border: var(--khaki);
+  --input: var(--ivory);
+  --ring: var(--camel);
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: var(--deep-green);
+  --foreground: var(--ivory);
+  --card: oklch(0.25 0.04 120);
+  --card-foreground: var(--ivory);
+  --popover: oklch(0.2 0.03 120);
+  --popover-foreground: var(--ivory);
+  --primary: var(--ivory);
+  --primary-foreground: var(--deep-green);
+  --secondary: var(--deep-green);
+  --secondary-foreground: var(--ivory);
+  --muted: oklch(0.25 0.04 120);
+  --muted-foreground: var(--camel);
+  --accent: oklch(0.25 0.04 120);
+  --accent-foreground: var(--ivory);
+  --destructive: oklch(0.45 0.2 25);
+  --destructive-foreground: oklch(0.85 0.15 25);
+  --border: oklch(0.25 0.04 120);
+  --input: oklch(0.25 0.04 120);
+  --ring: var(--camel);
+}
+
+@theme inline {
+  /* Color definitions */
+  --color-deep-green: var(--deep-green);
+  --color-camel: var(--camel);
+  --color-khaki: var(--khaki);
+  --color-ivory: var(--ivory);
+  
+  /* Legacy color mappings */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  
+  /* Font definitions */
+  --font-bodoni: "Bodoni Moda", serif;
+  --font-avenir: "Avenir Next", sans-serif;
+  --font-sans: var(--font-avenir);
+  --font-serif: var(--font-bodoni);
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  
+  /* Radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-ivory text-deep-green font-avenir;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bodoni;
+  }
+}
+
+/* Keyframes for floating animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@layer utilities {
+  /* Animation utilities */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  /* Fade in animations */
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* Pulse border animation */
+  @keyframes pulse-border {
+    0%,
+    100% {
+      border-color: var(--deep-green);
+      box-shadow: 0 0 0 0 rgba(26, 58, 47, 0.4);
+    }
+    50% {
+      border-color: var(--deep-green);
+      box-shadow: 0 0 0 8px rgba(26, 58, 47, 0);
+    }
+  }
+
+  /* Slow spin animation */
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Slow ping animation */
+  @keyframes ping-slow {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    75%,
+    100% {
+      transform: scale(2);
+      opacity: 0;
+    }
+  }
+
+  /* Scale hover animation */
+  @keyframes scale-102 {
+    to {
+      transform: scale(1.02);
+    }
+  }
+
+  /* Typing indicator animation */
+  @keyframes typing {
+    0%,
+    60%,
+    100% {
+      transform: translateY(0);
+    }
+    30% {
+      transform: translateY(-10px);
+    }
+  }
+
+  /* Progress bar fill animation */
+  @keyframes progress-fill {
+    from {
+      width: 0%;
+    }
+    to {
+      width: var(--progress-width, 100%);
+    }
+  }
+
+  /* Utility classes */
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s ease-out forwards;
+    opacity: 0;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.4s ease-out forwards;
+    opacity: 0;
+  }
+
+  .animate-pulse-border {
+    animation: pulse-border 2s infinite;
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 3s linear infinite;
+  }
+
+  .animate-ping-slow {
+    animation: ping-slow 3s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  .animate-scale-102 {
+    animation: scale-102 0.2s ease-out forwards;
+  }
+
+  .animate-typing {
+    animation: typing 1.4s infinite;
+  }
+
+  .animate-progress-fill {
+    animation: progress-fill 1s ease-out forwards;
+  }
+
+  /* Hover scale utilities */
+  .hover\:scale-102:hover {
+    transform: scale(1.02);
+  }
+
+  .hover\:scale-105:hover {
+    transform: scale(1.05);
+  }
+
+  /* Smooth transitions */
+  .transition-all-300 {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .transition-transform-300 {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  /* Stagger animation delays */
+  .stagger-1 {
+    animation-delay: 0.1s;
+  }
+  .stagger-2 {
+    animation-delay: 0.2s;
+  }
+  .stagger-3 {
+    animation-delay: 0.3s;
+  }
+  .stagger-4 {
+    animation-delay: 0.4s;
+  }
+  .stagger-5 {
+    animation-delay: 0.5s;
+  }
+}
+
+@layer components {
+  /* Interactive button styles */
+  .btn-interactive {
+    @apply transition-all duration-300 hover:scale-105 active:scale-95;
+  }
+
+  /* Card hover effects */
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+  }
+
+  /* Loading states */
+  .loading-overlay {
+    @apply absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center;
+  }
+
+  /* Success states */
+  .success-state {
+    @apply bg-green-50 border-green-200 text-green-800;
+  }
+
+  /* Error states */
+  .error-state {
+    @apply bg-red-50 border-red-200 text-red-800;
+  }
+
+  /* Warning states */
+  .warning-state {
+    @apply bg-yellow-50 border-yellow-200 text-yellow-800;
+  }
+
+  /* Info states */
+  .info-state {
+    @apply bg-blue-50 border-blue-200 text-blue-800;
+  }
+}
