@@ -1,13 +1,12 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import api from "@/lib/api"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+// import { Button } from "@/components/ui/button"
 import { formatCurrencyKES } from "@/lib/format"
 
 type Tx = { id: string; amount: number; to: string; createdAt: string; status: string }
 
-export default function TreasuryPage() {
+export function TreasurySimple() {
   const [balance, setBalance] = useState<number>(0)
   const [txs, setTxs] = useState<Tx[]>([])
 
