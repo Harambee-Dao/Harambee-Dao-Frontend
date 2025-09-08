@@ -68,8 +68,8 @@ export default function HeroSection() {
           <div
             className={`space-y-8 transition-all duration-1000 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
           >
-            <div className="space-y-4">
-              <h1 className="text-5xl lg:text-7xl font-bodoni font-bold text-deep-green leading-tight">
+            <div className="space-y-5">
+              <h1 className="text-6xl lg:text-8xl font-bodoni font-extrabold tracking-tight text-deep-green leading-[1.05] drop-shadow-sm">
                 <span className="inline-block">
                   Stop
                 </span>
@@ -80,7 +80,7 @@ export default function HeroSection() {
                   Forever
                 </span>
               </h1>
-              <p className="text-xl text-deep-green/70 max-w-2xl leading-relaxed font-avenir">
+              <p className="text-xl lg:text-2xl text-deep-green/90 max-w-3xl leading-relaxed font-avenir font-semibold">
                 AI-audited, multi-sig community treasury that releases funds only after verifiable project milestones.
                 Let members vote via SMS.
               </p>
@@ -105,7 +105,7 @@ export default function HeroSection() {
               </Button>
             </div>
 
-            <div className="flex items-center gap-8 text-sm text-deep-green/70 font-avenir">
+            <div className="flex items-center gap-8 text-sm text-deep-green/90 font-avenir font-semibold">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-deep-green rounded-full animate-pulse" />
                 <span>$3B+ Protected</span>
@@ -138,10 +138,9 @@ export default function HeroSection() {
                     }`}
                     onClick={() => {
                       setActiveFeature(index)
-                      // Navigate to demo after a short delay
                       setTimeout(() => {
                         window.location.href = feature.demoLink
-                      }, 500)
+                      }, 400)
                     }}
                   >
                     <div className="space-y-3">
@@ -152,10 +151,10 @@ export default function HeroSection() {
                             : "text-deep-green group-hover:scale-110"
                         }`}
                       />
-                      <h3 className="font-bodoni font-semibold text-deep-green group-hover:text-deep-green transition-colors">
+                      <h3 className="font-bodoni font-bold tracking-tight text-deep-green group-hover:text-deep-green transition-colors">
                         {feature.title}
                       </h3>
-                      <p className="text-sm text-deep-green/70 leading-relaxed font-avenir">{feature.description}</p>
+                      <p className="text-sm text-deep-green/90 leading-relaxed font-avenir font-semibold">{feature.description}</p>
                       <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                         <span className="text-xs text-deep-green font-medium flex items-center gap-1 font-avenir">
                           Try Demo <ArrowRight className="h-3 w-3" />

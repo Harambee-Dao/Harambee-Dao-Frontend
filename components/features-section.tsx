@@ -70,11 +70,11 @@ export function FeaturesSection() {
   return (
     <section className="py-24 bg-gradient-to-br from-ivory to-khaki/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center space-y-4 mb-16">
-          <h2 className="text-4xl lg:text-5xl font-bodoni font-bold text-deep-green">
+        <div className="text-center space-y-5 mb-16">
+          <h2 className="text-5xl lg:text-6xl font-bodoni font-extrabold tracking-tight text-deep-green">
             Core Features
           </h2>
-          <p className="text-xl text-deep-green/70 max-w-3xl mx-auto leading-relaxed font-avenir">
+          <p className="text-xl lg:text-2xl text-deep-green/90 max-w-3xl mx-auto leading-relaxed font-avenir font-semibold">
             Harambee DAO combines cutting-edge AI, blockchain security, and accessible governance 
             to eliminate embezzlement in community savings groups.
           </p>
@@ -86,7 +86,7 @@ export function FeaturesSection() {
             return (
               <Card 
                 key={index}
-                className="p-8 bg-ivory border border-khaki hover:shadow-xl transition-all duration-300 hover:scale-105"
+                className="p-8 hover:shadow-xl transition-all duration-300 hover:scale-105"
               >
                 <div className="flex items-start space-x-4">
                   <div className="w-16 h-16 bg-deep-green/10 rounded-full flex items-center justify-center flex-shrink-0">
@@ -94,10 +94,10 @@ export function FeaturesSection() {
                   </div>
                   <div className="flex-1 space-y-4">
                     <div>
-                      <h3 className="text-2xl font-bodoni font-semibold text-deep-green mb-2">
+                      <h3 className="text-2xl font-bodoni font-bold tracking-tight text-deep-green mb-2">
                         {feature.title}
                       </h3>
-                      <p className="text-deep-green/70 leading-relaxed font-avenir">
+                      <p className="text-deep-green/90 leading-relaxed font-avenir font-semibold">
                         {feature.description}
                       </p>
                     </div>

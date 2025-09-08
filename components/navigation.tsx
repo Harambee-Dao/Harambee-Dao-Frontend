@@ -44,7 +44,9 @@ export default function Navigation() {
         </div>
         {/* CTA */}
         <div className="flex items-center gap-4 ml-8">
-          <Button className="bg-deep-green hover:bg-camel text-ivory px-4 py-2 text-xs rounded-full">Get Started</Button>
+          <a href="/auth/login">
+            <Button className="bg-deep-green hover:bg-camel text-ivory px-4 py-2 text-xs rounded-full">Get Started</Button>
+          </a>
         </div>
       </nav>
 
@@ -104,7 +106,9 @@ export default function Navigation() {
                 AI Auditor Demo
               </a>
             </div>
-            <Button className="mt-8 w-full bg-deep-green hover:bg-camel text-ivory">Get Started</Button>
+            <a href="/auth/login">
+              <Button className="mt-8 w-full bg-deep-green hover:bg-camel text-ivory">Get Started</Button>
+            </a>
           </nav>
         </div>
       )}

@@ -9,14 +9,14 @@
   --deep-green: #1A3A2F;
   --camel: #C19A6B;
   --khaki: #C3B091;
-  --ivory: #FFFFF0;
+  --ivory: #FFFEFB;
   
   /* Legacy color tokens for compatibility */
   --background: var(--ivory);
   --foreground: var(--deep-green);
-  --card: var(--camel);
+  --card: var(--ivory);
   --card-foreground: var(--deep-green);
-  --popover: var(--khaki);
+  --popover: var(--ivory);
   --popover-foreground: var(--deep-green);
   --primary: var(--deep-green);
   --primary-foreground: var(--ivory);
@@ -28,7 +28,7 @@
   --accent-foreground: var(--deep-green);
   --destructive: oklch(0.55 0.25 25);
   --destructive-foreground: var(--ivory);
-  --border: var(--khaki);
+  --border: rgba(26, 58, 47, 0.25);
   --input: var(--ivory);
   --ring: var(--camel);
   --radius: 0.5rem;
@@ -103,10 +103,13 @@
     @apply border-border;
   }
   body {
-    @apply bg-ivory text-deep-green font-avenir;
+    @apply bg-khaki text-deep-green font-avenir antialiased leading-relaxed;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bodoni;
+    @apply font-bodoni font-extrabold tracking-tight;
+  }
+  p, li {
+    @apply text-[1.05rem] text-deep-green/90;
   }
 }
 

@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import { AppProviders } from "./providers"
 
 const bodoni = Inter({
   subsets: ["latin"],
@@ -29,8 +30,10 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${bodoni.variable} ${helvetica.variable} antialiased`}>
-      <body className="min-h-screen bg-background font-sans antialiased">{children}</body>
+    <html lang="en" suppressHydrationWarning className={`${bodoni.variable} ${helvetica.variable} antialiased`}>
+      <body className="min-h-screen bg-background font-sans antialiased">
+        <AppProviders>{children}</AppProviders>
+      </body>
     </html>
   )
 }
