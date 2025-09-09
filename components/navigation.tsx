@@ -3,6 +3,8 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X, Home, Layers, Shield, MessageCircle, Users, Book, Play, Eye } from "lucide-react"
+import Image from "next/image"
+
 
 const navLinks = [
   { href: "/", label: "Home", icon: Home },
@@ -20,11 +22,17 @@ export default function Navigation() {
   return (
     <>
       {/* Desktop: Floating Circular Nav */}
-      <nav className="hidden md:flex fixed top-2 left-1/2 -translate-x-1/2 z-50 bg-white/60 backdrop-blur-lg rounded-full shadow-lg px-8 py-4 flex items-center gap-12 border border-khaki/30">
+      <nav className=" md:flex fixed top-2 left-1/2 -translate-x-1/2 z-50 bg-white/60 backdrop-blur-lg rounded-full shadow-lg px-8 py-4 flex items-center gap-12 border border-khaki/30">
         {/* Center Logo */}
         <div className="relative flex items-center justify-center">
           <div className="w-14 h-14 bg-deep-green rounded-full flex items-center justify-center shadow-lg">
-            <span className="text-3xl font-bodoni font-bold text-ivory">H</span>
+            <Image
+      src="/harambee dao.jpg"
+      alt="Harambee Logo"
+      width={56}   // match w-14
+      height={56}  // match h-14
+      className="object-cover"
+    />
           </div>
           {/* Accent shape */}
           <div className="absolute -top-4 -right-4 w-6 h-6 bg-camel/30 rounded-full blur-lg animate-float" />
@@ -76,7 +84,13 @@ export default function Navigation() {
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 bg-deep-green rounded-full flex items-center justify-center shadow-lg">
-                  <span className="text-xl font-bodoni font-bold text-ivory">H</span>
+                  <Image
+                src="/harambee dao.jpg"
+                alt="Harambee Logo"
+                width={40}   // match w-10
+                height={40}  // match h-10
+                className="object-cover"
+                />
                 </div>
                 <span className="text-lg font-bodoni font-bold text-deep-green">Harambee</span>
               </div>

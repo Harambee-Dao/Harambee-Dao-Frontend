@@ -21,7 +21,6 @@ const helvetica = Inter({
 export const metadata: Metadata = {
   title: "Harambee DAO - AI-Governed Collective Fund",
   description: "Stop embezzlement in community savings groups with AI-audited, multi-sig treasury and SMS governance",
-  generator: "v0.app",
 }
 
 export default function RootLayout({
