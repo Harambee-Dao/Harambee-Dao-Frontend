@@ -24,7 +24,7 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  if (token && isAuthRoute) {
+  if (token && isAuthRoute && pathname !== "/auth/register" && pathname !== "/auth/login") {
     const url = request.nextUrl.clone()
     url.pathname = kyc === "verified" ? "/dashboard" : "/kyc/upload"
     return NextResponse.redirect(url)

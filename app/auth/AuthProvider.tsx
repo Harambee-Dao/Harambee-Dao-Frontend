@@ -16,7 +16,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
 
-  async function refresh() {
+   async function refresh() {
     try {
       const res = await api.get("/api/users/me")
       setUser(res.data)

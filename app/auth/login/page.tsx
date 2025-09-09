@@ -1,135 +1,203 @@
 "use client"
 import { useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import api from "@/lib/api"
-import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { Phone, Lock } from "lucide-react"
-import { OTPInput, SlotProps } from "input-otp"
+import { Mail, Lock, Eye, EyeOff, Wallet } from "lucide-react"
 
-export default function LoginPage() {
+export default function login() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const nextUrl = searchParams.get("next") || "/dashboard"
-  const [phone, setPhone] = useState("")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [step, setStep] = useState<"form" | "otp">("form")
-  const [otp, setOtp] = useState("")
-  const useLocalOtp = process.env.NEXT_PUBLIC_LOCAL_OTP === "true"
-  const [devOtp, setDevOtp] = useState("")
+  const [walletConnecting, setWalletConnecting] = useState(false)
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    try {
-      if (useLocalOtp) {
-        const code = String(Math.floor(Math.random() * 900000) + 100000)
-        setDevOtp(code)
-        setOtp(code)
-      } else {
-        // Request OTP for the phone number
-        const res = await api.post("/api/users/phone/request-otp", { phone })
-        setDevOtp(res.data?.otp || "")
-      }
-      setStep("otp")
-      toast.success("OTP sent to your phone")
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to request OTP")
-    } finally {
-      setLoading(false)
-    }
+  // Email validation
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
   }
 
-  async function onVerifyOtp(e: React.FormEvent) {
-    e.preventDefault()
-    const code = (otp && otp.trim().length >= 4) ? otp.trim() : (useLocalOtp ? devOtp : "")
-    if (!code || code.length < 4) return toast.error("Enter the OTP sent to your phone")
+  async function onEmailLogin() {
+    if (!isValidEmail(email)) {
+      alert("Please enter a valid email address")
+      return
+    }
+    
+    if (!password) {
+      alert("Please enter your password")
+      return
+    }
+
     setLoading(true)
-    try {
-      if (useLocalOtp) {
-        if (code !== devOtp) throw new Error("Invalid OTP")
-        document.cookie = `auth_token=local-dev; path=/`
-        document.cookie = `kyc_status=pending; path=/`
-      } else {
-        await api.post("/api/users/phone/verify-otp", { phone, otp: code })
-      }
-      toast.success("Logged in")
-      router.replace("/kyc/upload")
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "OTP verification failed")
-    } finally {
+    
+    // Mock login - simulate API call
+    setTimeout(() => {
+      // Set mock auth cookie
+      document.cookie = `auth_token=mock-email-token; path=/`
+      document.cookie = `auth_method=email; path=/`
+      
       setLoading(false)
+      router.push("/dashboard")
+    }, 1000)
+  }
+
+  async function onConnectWallet() {
+    setWalletConnecting(true)
+    
+    // Mock wallet connection - simulate wallet connection flow
+    setTimeout(() => {
+      // Set mock auth cookie for wallet
+      document.cookie = `auth_token=mock-wallet-token; path=/`
+      document.cookie = `auth_method=wallet; path=/`
+      document.cookie = `wallet_address=0x1234...5678; path=/`
+      
+      setWalletConnecting(false)
+      router.push("/dashboard")
+    }, 2000)
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !loading) {
+      onEmailLogin()
     }
   }
 
   return (
-    <div className="relative min-h-[100dvh]">
-      <div className="absolute inset-0 bg-gradient-to-br from-deep-green/10 via-camel/10 to-ivory" />
-      <div className="relative mx-auto flex min-h-[100dvh] max-w-xl items-center justify-center p-6">
-        <Card className="w-full p-6 shadow-2xl backdrop-blur-sm bg-ivory border border-khaki">
-          <div className="mb-6 text-center">
-            <h1 className="text-3xl font-extrabold tracking-tight">Welcome back</h1>
-            <p className="text-sm text-muted-foreground">Sign in to continue</p>
+    <div className="relative min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100 via-transparent to-transparent" />
+      
+      <div className="relative mx-auto flex min-h-screen max-w-md items-center justify-center p-6">
+        <Card className="w-full p-8 shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+          
+          {/* Logo and Tagline */}
+          <div className="mb-8 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">
+              <Wallet size={28} />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-1">DAO Treasury</h1>
+            <p className="text-sm text-gray-600 font-medium">Secure Community Treasury</p>
           </div>
-          {step === "form" && (
-            <form onSubmit={onSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold">Phone Number</label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"><Phone size={16} /></span>
-                  <Input className="pl-9 font-semibold" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g. +2547..." required />
-                </div>
+
+          {/* Email & Password Form */}
+          <div className="space-y-4 mb-6">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">Email Address</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <Input 
+                  className="pl-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500" 
+                  type="email"
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  onKeyPress={handleKeyPress}
+                  placeholder="Enter your email address"
+                />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold">Password</label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"><Lock size={16} /></span>
-                  <Input className="pl-9 font-semibold" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                </div>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <Input 
+                  className="pl-10 pr-12 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500" 
+                  type={showPassword ? "text" : "password"}
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  onKeyPress={handleKeyPress}
+                  placeholder="Enter your password"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
-              <Button disabled={loading} className="w-full font-bold" type="submit">
-                {loading ? "Sending OTP..." : "Continue"}
-              </Button>
-            </form>
-          )}
-          {step === "otp" && (
-            <form onSubmit={onVerifyOtp} className="space-y-4">
-              <label className="text-sm font-semibold">Enter OTP</label>
-              <OTPInput
-                maxLength={6}
-                value={otp}
-                onChange={setOtp}
-                render={({ slots }) => (
-                  <div className="flex gap-2">
-                    {slots.map((slot: SlotProps, idx: number) => (
-                      <div key={idx} className="flex h-10 w-10 items-center justify-center rounded-md border border-[color:var(--border)] bg-background text-lg font-bold">
-                        {slot.char ?? <span className="text-muted-foreground">•</span>}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              />
-              {useLocalOtp && devOtp && (
-                <p className="text-xs text-muted-foreground">Dev OTP: {devOtp}</p>
+            </div>
+            
+            <Button 
+              disabled={loading || !email || !password} 
+              className="w-full h-12 font-semibold bg-gray-900 hover:bg-gray-800 text-white disabled:opacity-50 transition-all duration-200" 
+              onClick={onEmailLogin}
+            >
+              {loading ? (
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Logging in...
+                </div>
+              ) : (
+                "Login with Email"
               )}
-              <Button disabled={loading} className="w-full font-bold" type="submit">
-                {loading ? "Verifying..." : "Verify OTP"}
-              </Button>
-              <button type="button" className="text-sm underline" onClick={() => setStep("form")}>Edit phone</button>
-            </form>
-          )}
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            No account? <a className="font-semibold underline" href="/auth/register">Create one</a>
-          </p>
+            </Button>
+          </div>
+
+          {/* Divider */}
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white px-6 text-gray-500 font-medium">OR</span>
+            </div>
+          </div>
+
+          {/* Connect Wallet Button */}
+          <Button
+            onClick={onConnectWallet}
+            disabled={walletConnecting}
+            className="w-full h-16 text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:transform-none"
+          >
+            {walletConnecting ? (
+              <div className="flex items-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                Connecting Wallet...
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <Wallet className="mr-3" size={24} />
+                Connect Wallet
+              </div>
+            )}
+          </Button>
+
+          {/* Additional Options */}
+          <div className="mt-6 text-center">
+            <button className="text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors">
+              Forgot your password?
+            </button>
+          </div>
+
+          {/* Footer */}
+          <div className="mt-8 pt-6 border-t border-gray-100">
+            <p className="text-center text-xs text-gray-500 leading-relaxed">
+              By logging in or connecting your wallet, you agree to our{" "}
+              <a href="/terms" className="font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors">
+                Terms of Service
+              </a>{" "}
+              and{" "}
+              <a href="/privacy" className="font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors">
+                Privacy Policy
+              </a>
+              .
+            </p>
+          </div>
+
+          {/* Sign Up Link */}
+          <div className="mt-4 text-center">
+            <p className="text-sm text-gray-600">
+              Don't have an account?{" "}
+              <a href="/auth/register" className="font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors">
+                Sign up here
+              </a>
+            </p>
+          </div>
         </Card>
       </div>
     </div>
   )
 }
-
-
-
-

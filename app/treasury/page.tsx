@@ -1,39 +1,52 @@
-
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Badge } from "@/components/ui/badge"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { useAccount } from 'wagmi'
+import { motion, AnimatePresence } from "framer-motion"
 import { 
-  Shield, 
   DollarSign, 
   Users, 
-  Clock,
-  CheckCircle,
-  XCircle,
-  ArrowRight,
-  Calendar,
   TrendingUp,
   Lock,
   Eye,
   Send,
-  Download
+  Download,
+  Plus,
+  Vote,
+  CheckCircle,
+  XCircle,
+  Clock,
+  ExternalLink
 } from "lucide-react"
 
 interface Transaction {
   id: string
-  type: "deposit" | "withdrawal" | "release"
+  date: string
+  type: "Contribution" | "Payout"
+  walletOrMember: string
   amount: number
+  status: "Completed" | "Pending" | "Failed"
+  hash: string
+}
+
+interface Proposal {
+  id: string
+  title: string
   description: string
-  status: "pending" | "approved" | "rejected" | "completed"
-  timestamp: Date
-  signers: string[]
-  requiredSigners: number
-  approvals: number
-  proposalId?: string
+  requestedAmount: number
+  status: "Voting" | "Passed" | "Rejected"
+  votesFor: number
+  votesAgainst: number
+  deadline: string
 }
 
 interface TreasuryStats {
@@ -46,99 +59,152 @@ interface TreasuryStats {
 }
 
 export default function TreasuryPage() {
-  const [activeTab, setActiveTab] = useState<"overview" | "transactions" | "proposals" | "settings">("overview")
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
-
-  const treasuryStats: TreasuryStats = {
-    totalFunds: 2500000,
-    availableFunds: 1800000,
-    lockedFunds: 700000,
-    totalMembers: 80,
-    activeProposals: 3,
-    pendingTransactions: 2
-  }
-
-  const sampleTransactions: Transaction[] = [
+  const { address, isConnected } = useAccount()
+  const [activeTab, setActiveTab] = useState<"overview" | "transactions" | "proposals">("overview")
+  const [isContributeModalOpen, setIsContributeModalOpen] = useState(false)
+  const [contributionAmount, setContributionAmount] = useState("")
+  
+  // Mock state
+  const [balance, setBalance] = useState<number>(1250.00)
+  const [transactions, setTransactions] = useState<Transaction[]>([
     {
       id: "tx-001",
-      type: "release",
-      amount: 250000,
-      description: "Corn Farming Project - Nakuru (Milestone 1)",
-      status: "completed",
-      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      signers: ["Alice", "Bob", "Charlie"],
-      requiredSigners: 2,
-      approvals: 3,
-      proposalId: "prop-001"
+      date: "2024-08-20",
+      type: "Contribution",
+      walletOrMember: "0x4f2c...a9b7",
+      amount: 50,
+      status: "Completed",
+      hash: "0x123abc..."
     },
     {
-      id: "tx-002",
-      type: "release",
-      amount: 500000,
-      description: "Community Water Well (Foundation Complete)",
-      status: "pending",
-      timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-      signers: ["Alice", "Bob", "Charlie"],
-      requiredSigners: 2,
-      approvals: 1,
-      proposalId: "prop-002"
+      id: "tx-002", 
+      date: "2024-08-21",
+      type: "Payout",
+      walletOrMember: "Seeds Supplier",
+      amount: -200,
+      status: "Completed", 
+      hash: "0x456def..."
     },
     {
       id: "tx-003",
-      type: "deposit",
-      amount: 100000,
-      description: "Monthly contribution from member #45",
-      status: "completed",
-      timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-      signers: ["System"],
-      requiredSigners: 1,
-      approvals: 1
+      date: "2024-08-22",
+      type: "Contribution",
+      walletOrMember: "0x8a1b...c3d4",
+      amount: 75,
+      status: "Completed",
+      hash: "0x789ghi..."
+    }
+  ])
+
+  const [proposals, setProposals] = useState<Proposal[]>([
+    {
+      id: "prop-001",
+      title: "Corn Seeds Purchase",
+      description: "Buy high-quality corn seeds for 5-acre farm in Nakuru",
+      requestedAmount: 250,
+      status: "Passed",
+      votesFor: 45,
+      votesAgainst: 12,
+      deadline: "2024-08-25"
     },
     {
-      id: "tx-004",
-      type: "withdrawal",
-      amount: 50000,
-      description: "Emergency fund withdrawal - Medical expenses",
-      status: "approved",
-      timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
-      signers: ["Alice", "Bob", "Charlie"],
-      requiredSigners: 2,
-      approvals: 2
+      id: "prop-002", 
+      title: "Irrigation System",
+      description: "Install drip irrigation system for water conservation",
+      requestedAmount: 500,
+      status: "Voting",
+      votesFor: 23,
+      votesAgainst: 8,
+      deadline: "2024-09-01"
+    },
+    {
+      id: "prop-003",
+      title: "Farm Equipment",
+      description: "Purchase basic farming tools and equipment",
+      requestedAmount: 300,
+      status: "Rejected",
+      votesFor: 15,
+      votesAgainst: 35,
+      deadline: "2024-08-15"
     }
-  ]
+  ])
+
+  const treasuryStats: TreasuryStats = {
+    totalFunds: balance,
+    availableFunds: balance * 0.8,
+    lockedFunds: balance * 0.2,
+    totalMembers: 80,
+    activeProposals: proposals.filter(p => p.status === "Voting").length,
+    pendingTransactions: transactions.filter(t => t.status === "Pending").length
+  }
+
+  const handleContribute = () => {
+    if (!contributionAmount || !isConnected) return
+    
+    const amount = parseFloat(contributionAmount)
+    if (amount <= 0) return
+
+    const newTransaction: Transaction = {
+      id: `tx-${Date.now()}`,
+      date: new Date().toISOString().split('T')[0],
+      type: "Contribution",
+      walletOrMember: address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Unknown",
+      amount: amount,
+      status: "Completed",
+      hash: `0x${Math.random().toString(16).substr(2, 8)}...`
+    }
+
+    setBalance(prev => prev + amount)
+    setTransactions(prev => [newTransaction, ...prev])
+    setContributionAmount("")
+    setIsContributeModalOpen(false)
+  }
+
+  const handleReleaseFunds = (proposalId: string, amount: number, title: string) => {
+    if (balance < amount) return
+
+    const newTransaction: Transaction = {
+      id: `tx-${Date.now()}`,
+      date: new Date().toISOString().split('T')[0],
+      type: "Payout",
+      walletOrMember: title,
+      amount: -amount,
+      status: "Completed",
+      hash: `0x${Math.random().toString(16).substr(2, 8)}...`
+    }
+
+    setBalance(prev => prev - amount)
+    setTransactions(prev => [newTransaction, ...prev])
+    
+    // Update proposal status to show it's been funded
+    setProposals(prev => prev.map(p => 
+      p.id === proposalId ? { ...p, status: "Rejected" as const } : p
+    ))
+  }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-KE', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'KES'
-    }).format(amount)
+      currency: 'USD'
+    }).format(Math.abs(amount))
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "completed":
+      case "Completed":
         return "bg-green-100 text-green-800"
-      case "approved":
-        return "bg-blue-100 text-blue-800"
-      case "pending":
+      case "Pending":
         return "bg-yellow-100 text-yellow-800"
-      case "rejected":
+      case "Failed":
+        return "bg-red-100 text-red-800"
+      case "Passed":
+        return "bg-green-100 text-green-800"
+      case "Voting":
+        return "bg-blue-100 text-blue-800"
+      case "Rejected":
         return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
-    }
-  }
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "deposit":
-        return <TrendingUp className="w-4 h-4 text-green-500" />
-      case "withdrawal":
-        return <ArrowRight className="w-4 h-4 text-red-500" />
-      case "release":
-        return <Send className="w-4 h-4 text-blue-500" />
-      default:
-        return <DollarSign className="w-4 h-4 text-gray-500" />
     }
   }
 
@@ -148,402 +214,336 @@ export default function TreasuryPage() {
       <main className="pt-16">
         <section className="py-16 bg-gradient-to-br from-deep-green/5 to-khaki/20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h1 className="text-5xl font-bodoni font-bold text-deep-green mb-4">Multi-Sig Treasury</h1>
-              <p className="text-xl text-deep-green/70 max-w-3xl mx-auto font-avenir">
-                Secure fund management with multi-signature approval. Funds are only released 
-                after AI verification and community voting.
-              </p>
+            {/* Header with Connect Wallet */}
+            <div className="flex justify-between items-center mb-8">
+              <div className="text-center">
+                <h1 className="text-5xl font-bodoni font-bold text-deep-green mb-4">Multi-Sig Treasury</h1>
+                <p className="text-xl text-deep-green/70 max-w-3xl mx-auto font-avenir">
+                  Secure fund management with multi-signature approval and community governance.
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                <ConnectButton />
+              </div>
             </div>
+
+            {/* Treasury Balance */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Card className="p-8 bg-gradient-to-r from-deep-green to-deep-green/90 text-ivory mb-8">
+                <div className="text-center">
+                  <div className="text-sm opacity-80 mb-2">Treasury Balance</div>
+                  <div className="text-6xl font-bodoni font-bold mb-4">
+                    {formatCurrency(balance)}
+                  </div>
+                  <div className="flex justify-center gap-8 text-sm">
+                    <div>
+                      <span className="opacity-80">Available: </span>
+                      <span className="font-medium">{formatCurrency(treasuryStats.availableFunds)}</span>
+                    </div>
+                    <div>
+                      <span className="opacity-80">Locked: </span>
+                      <span className="font-medium">{formatCurrency(treasuryStats.lockedFunds)}</span>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
 
             {/* Tab Navigation */}
             <div className="flex justify-center mb-8">
               <div className="flex space-x-1 bg-khaki/20 rounded-lg p-1">
-                <button
-                  onClick={() => setActiveTab("overview")}
-                  className={`px-6 py-3 rounded-md font-avenir transition-all ${
-                    activeTab === "overview"
-                      ? "bg-deep-green text-ivory"
-                      : "text-deep-green hover:bg-deep-green/10"
-                  }`}
-                >
-                  Overview
-                </button>
-                <button
-                  onClick={() => setActiveTab("transactions")}
-                  className={`px-6 py-3 rounded-md font-avenir transition-all ${
-                    activeTab === "transactions"
-                      ? "bg-deep-green text-ivory"
-                      : "text-deep-green hover:bg-deep-green/10"
-                  }`}
-                >
-                  Transactions
-                </button>
-                <button
-                  onClick={() => setActiveTab("proposals")}
-                  className={`px-6 py-3 rounded-md font-avenir transition-all ${
-                    activeTab === "proposals"
-                      ? "bg-deep-green text-ivory"
-                      : "text-deep-green hover:bg-deep-green/10"
-                  }`}
-                >
-                  Proposals
-                </button>
-                <button
-                  onClick={() => setActiveTab("settings")}
-                  className={`px-6 py-3 rounded-md font-avenir transition-all ${
-                    activeTab === "settings"
-                      ? "bg-deep-green text-ivory"
-                      : "text-deep-green hover:bg-deep-green/10"
-                  }`}
-                >
-                  Settings
-                </button>
+                {["overview", "transactions", "proposals"].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab as any)}
+                    className={`px-6 py-3 rounded-md font-avenir transition-all capitalize ${
+                      activeTab === tab
+                        ? "bg-deep-green text-ivory"
+                        : "text-deep-green hover:bg-deep-green/10"
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Overview Tab */}
-            {activeTab === "overview" && (
-              <div className="space-y-8">
-                {/* Treasury Stats */}
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <Card className="p-6 bg-ivory border border-khaki text-center">
-                    <div className="w-12 h-12 bg-deep-green/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <DollarSign className="w-6 h-6 text-deep-green" />
-                    </div>
-                    <div className="text-2xl font-bodoni font-bold text-deep-green mb-2">
-                      {formatCurrency(treasuryStats.totalFunds)}
-                    </div>
-                    <div className="text-sm text-deep-green/70 font-avenir">Total Funds</div>
-                  </Card>
-
-                  <Card className="p-6 bg-ivory border border-khaki text-center">
-                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <TrendingUp className="w-6 h-6 text-green-600" />
-                    </div>
-                    <div className="text-2xl font-bodoni font-bold text-deep-green mb-2">
-                      {formatCurrency(treasuryStats.availableFunds)}
-                    </div>
-                    <div className="text-sm text-deep-green/70 font-avenir">Available Funds</div>
-                  </Card>
-
-                  <Card className="p-6 bg-ivory border border-khaki text-center">
-                    <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Lock className="w-6 h-6 text-yellow-600" />
-                    </div>
-                    <div className="text-2xl font-bodoni font-bold text-deep-green mb-2">
-                      {formatCurrency(treasuryStats.lockedFunds)}
-                    </div>
-                    <div className="text-sm text-deep-green/70 font-avenir">Locked Funds</div>
-                  </Card>
-
-                  <Card className="p-6 bg-ivory border border-khaki text-center">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Users className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <div className="text-2xl font-bodoni font-bold text-deep-green mb-2">
-                      {treasuryStats.totalMembers}
-                    </div>
-                    <div className="text-sm text-deep-green/70 font-avenir">Total Members</div>
-                  </Card>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="grid md:grid-cols-2 gap-6">
-                  <Card className="p-6 bg-ivory border border-khaki">
-                    <h3 className="text-lg font-bodoni font-semibold text-deep-green mb-4">Quick Actions</h3>
-                    <div className="space-y-3">
-                      <Button className="w-full bg-deep-green hover:bg-camel text-ivory font-avenir">
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Pending Transactions
-                      </Button>
-                      <Button variant="outline" className="w-full border-deep-green text-deep-green hover:bg-deep-green hover:text-ivory font-avenir">
-                        <Download className="mr-2 h-4 w-4" />
-                        Export Transaction History
-                      </Button>
-                    </div>
-                  </Card>
-
-                  <Card className="p-6 bg-ivory border border-khaki">
-                    <h3 className="text-lg font-bodoni font-semibold text-deep-green mb-4">Security Status</h3>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-avenir text-deep-green">Multi-Sig Status</span>
-                        <span className="text-sm font-medium text-green-600">Active</span>
+            <AnimatePresence mode="wait">
+              {/* Overview Tab */}
+              {activeTab === "overview" && (
+                <motion.div
+                  key="overview"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-8"
+                >
+                  {/* Stats Grid */}
+                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <Card className="p-6 bg-ivory border border-khaki text-center">
+                      <div className="w-12 h-12 bg-deep-green/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <DollarSign className="w-6 h-6 text-deep-green" />
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-avenir text-deep-green">Required Signers</span>
-                        <span className="text-sm font-medium text-deep-green">2 of 3</span>
+                      <div className="text-2xl font-bodoni font-bold text-deep-green mb-2">
+                        {formatCurrency(treasuryStats.totalFunds)}
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-avenir text-deep-green">Last Audit</span>
-                        <span className="text-sm font-medium text-deep-green">2 days ago</span>
-                      </div>
-                    </div>
-                  </Card>
-                </div>
+                      <div className="text-sm text-deep-green/70 font-avenir">Total Funds</div>
+                    </Card>
 
-                {/* Recent Activity */}
-                <Card className="p-6 bg-ivory border border-khaki">
-                  <h3 className="text-lg font-bodoni font-semibold text-deep-green mb-4">Recent Activity</h3>
-                  <div className="space-y-3">
-                    {sampleTransactions.slice(0, 3).map((tx) => (
-                      <div key={tx.id} className="flex items-center justify-between p-3 bg-khaki/20 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          {getTypeIcon(tx.type)}
-                          <div>
-                            <div className="text-sm font-avenir text-deep-green font-medium">{tx.description}</div>
-                            <div className="text-xs text-deep-green/60 font-avenir">
-                              {tx.timestamp.toLocaleDateString()}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-sm font-avenir text-deep-green font-medium">
-                            {formatCurrency(tx.amount)}
-                          </div>
-                          <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(tx.status)}`}>
-                            {tx.status}
-                          </span>
-                        </div>
+                    <Card className="p-6 bg-ivory border border-khaki text-center">
+                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Users className="w-6 h-6 text-blue-600" />
                       </div>
-                    ))}
+                      <div className="text-2xl font-bodoni font-bold text-deep-green mb-2">
+                        {treasuryStats.totalMembers}
+                      </div>
+                      <div className="text-sm text-deep-green/70 font-avenir">Total Members</div>
+                    </Card>
+
+                    <Card className="p-6 bg-ivory border border-khaki text-center">
+                      <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Vote className="w-6 h-6 text-yellow-600" />
+                      </div>
+                      <div className="text-2xl font-bodoni font-bold text-deep-green mb-2">
+                        {treasuryStats.activeProposals}
+                      </div>
+                      <div className="text-sm text-deep-green/70 font-avenir">Active Proposals</div>
+                    </Card>
+
+                    <Card className="p-6 bg-ivory border border-khaki text-center">
+                      <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <TrendingUp className="w-6 h-6 text-green-600" />
+                      </div>
+                      <div className="text-2xl font-bodoni font-bold text-deep-green mb-2">
+                        {transactions.filter(t => t.type === "Contribution").length}
+                      </div>
+                      <div className="text-sm text-deep-green/70 font-avenir">Contributors</div>
+                    </Card>
                   </div>
-                </Card>
-              </div>
-            )}
 
-            {/* Transactions Tab */}
-            {activeTab === "transactions" && (
-              <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-bodoni font-bold text-deep-green">Transaction History</h2>
-                  <Button variant="outline" className="border-deep-green text-deep-green hover:bg-deep-green hover:text-ivory font-avenir">
-                    <Download className="mr-2 h-4 w-4" />
-                    Export
-                  </Button>
-                </div>
-
-                <div className="space-y-4">
-                  {sampleTransactions.map((tx) => (
-                    <Card key={tx.id} className="p-6 bg-ivory border border-khaki">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 bg-deep-green/10 rounded-full flex items-center justify-center">
-                            {getTypeIcon(tx.type)}
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-bodoni font-semibold text-deep-green">{tx.description}</h3>
-                            <div className="flex items-center gap-4 text-sm font-avenir text-deep-green/60">
-                              <span>{tx.timestamp.toLocaleDateString()}</span>
-                              <span>•</span>
-                              <span>{tx.approvals}/{tx.requiredSigners} approvals</span>
+                  {/* Quick Actions */}
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <Card className="p-6 bg-ivory border border-khaki">
+                      <h3 className="text-lg font-bodoni font-semibold text-deep-green mb-4">Quick Actions</h3>
+                      <div className="space-y-3">
+                        <Dialog open={isContributeModalOpen} onOpenChange={setIsContributeModalOpen}>
+                          <DialogTrigger asChild>
+                            <Button 
+                              className="w-full bg-deep-green hover:bg-camel text-ivory font-avenir"
+                              disabled={!isConnected}
+                            >
+                              <Plus className="mr-2 h-4 w-4" />
+                              Contribute
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="bg-ivory">
+                            <DialogHeader>
+                              <DialogTitle className="font-bodoni text-deep-green">Make a Contribution</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <label className="text-sm font-avenir text-deep-green mb-2 block">
+                                  Amount (USD)
+                                </label>
+                                <Input
+                                  type="number"
+                                  placeholder="0.00"
+                                  value={contributionAmount}
+                                  onChange={(e) => setContributionAmount(e.target.value)}
+                                  className="border-khaki"
+                                />
+                              </div>
+                              <Button 
+                                onClick={handleContribute}
+                                className="w-full bg-deep-green hover:bg-camel text-ivory font-avenir"
+                                disabled={!contributionAmount || !isConnected}
+                              >
+                                Confirm Contribution
+                              </Button>
                             </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-bodoni font-semibold text-deep-green">
-                            {formatCurrency(tx.amount)}
-                          </div>
-                          <span className={`text-sm px-3 py-1 rounded-full ${getStatusColor(tx.status)}`}>
-                            {tx.status}
-                          </span>
-                        </div>
+                          </DialogContent>
+                        </Dialog>
+                        
+                        <Button variant="outline" className="w-full border-deep-green text-deep-green hover:bg-deep-green hover:text-ivory font-avenir">
+                          <Download className="mr-2 h-4 w-4" />
+                          Export History
+                        </Button>
                       </div>
+                    </Card>
 
-                      {tx.status === "pending" && (
-                        <div className="mt-4 pt-4 border-t border-khaki">
+                    <Card className="p-6 bg-ivory border border-khaki">
+                      <h3 className="text-lg font-bodoni font-semibold text-deep-green mb-4">Wallet Status</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-avenir text-deep-green">Connection</span>
+                          <Badge variant={isConnected ? "default" : "secondary"}>
+                            {isConnected ? "Connected" : "Disconnected"}
+                          </Badge>
+                        </div>
+                        {isConnected && address && (
                           <div className="flex items-center justify-between">
-                            <span className="text-sm font-avenir text-deep-green">Approval Progress</span>
-                            <span className="text-sm font-medium text-deep-green">
-                              {tx.approvals}/{tx.requiredSigners} signers
+                            <span className="text-sm font-avenir text-deep-green">Address</span>
+                            <span className="text-sm font-mono text-deep-green">
+                              {`${address.slice(0, 6)}...${address.slice(-4)}`}
                             </span>
                           </div>
-                          <div className="w-full bg-khaki/30 rounded-full h-2 mt-2">
-                            <div 
-                              className="bg-deep-green h-2 rounded-full transition-all duration-300"
-                              style={{ width: `${(tx.approvals / tx.requiredSigners) * 100}%` }}
-                            />
-                          </div>
-                          <div className="flex gap-2 mt-3">
-                            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white font-avenir">
-                              <CheckCircle className="mr-1 h-3 w-3" />
-                              Approve
-                            </Button>
-                            <Button size="sm" variant="outline" className="border-red-500 text-red-500 hover:bg-red-50 font-avenir">
-                              <XCircle className="mr-1 h-3 w-3" />
-                              Reject
-                            </Button>
-                          </div>
+                        )}
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-avenir text-deep-green">Network</span>
+                          <span className="text-sm font-medium text-green-600">Mainnet</span>
                         </div>
-                      )}
+                      </div>
                     </Card>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Proposals Tab */}
-            {activeTab === "proposals" && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bodoni font-bold text-deep-green">Active Proposals</h2>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <Card className="p-6 bg-ivory border border-khaki">
-                    <h3 className="text-lg font-bodoni font-semibold text-deep-green mb-2">Corn Farming Project</h3>
-                    <p className="text-deep-green/70 font-avenir mb-4">Plant corn on 5 acres in Nakuru region</p>
-                    <div className="space-y-2 text-sm font-avenir">
-                      <div className="flex justify-between">
-                        <span className="text-deep-green/70">Amount:</span>
-                        <span className="text-deep-green font-medium">{formatCurrency(250000)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-deep-green/70">Votes:</span>
-                        <span className="text-deep-green font-medium">45 Yes, 12 No</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-deep-green/70">Status:</span>
-                        <span className="text-green-600 font-medium">Approved</span>
-                      </div>
-                    </div>
-                  </Card>
-
-                  <Card className="p-6 bg-ivory border border-khaki">
-                    <h3 className="text-lg font-bodoni font-semibold text-deep-green mb-2">Community Water Well</h3>
-                    <p className="text-deep-green/70 font-avenir mb-4">Drill a water well for the community</p>
-                    <div className="space-y-2 text-sm font-avenir">
-                      <div className="flex justify-between">
-                        <span className="text-deep-green/70">Amount:</span>
-                        <span className="text-deep-green font-medium">{formatCurrency(500000)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-deep-green/70">Votes:</span>
-                        <span className="text-deep-green font-medium">67 Yes, 8 No</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-deep-green/70">Status:</span>
-                        <span className="text-yellow-600 font-medium">Pending Release</span>
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-              </div>
-            )}
-
-            {/* Settings Tab */}
-            {activeTab === "settings" && (
-              <div className="max-w-2xl mx-auto space-y-6">
-                <h2 className="text-2xl font-bodoni font-bold text-deep-green">Treasury Settings</h2>
-                
-                <Card className="p-6 bg-ivory border border-khaki">
-                  <h3 className="text-lg font-bodoni font-semibold text-deep-green mb-4">Multi-Signature Configuration</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-bodoni font-semibold text-deep-green mb-2">
-                        Required Signers
-                      </label>
-                      <Input
-                        type="number"
-                        defaultValue="2"
-                        min="1"
-                        max="5"
-                        className="border-khaki focus:border-deep-green font-avenir"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bodoni font-semibold text-deep-green mb-2">
-                        Total Signers
-                      </label>
-                      <Input
-                        type="number"
-                        defaultValue="3"
-                        min="2"
-                        max="10"
-                        className="border-khaki focus:border-deep-green font-avenir"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bodoni font-semibold text-deep-green mb-2">
-                        Timelock Duration (hours)
-                      </label>
-                      <Input
-                        type="number"
-                        defaultValue="24"
-                        min="1"
-                        max="168"
-                        className="border-khaki focus:border-deep-green font-avenir"
-                      />
-                    </div>
                   </div>
-                </Card>
+                </motion.div>
+              )}
 
-                <Card className="p-6 bg-ivory border border-khaki">
-                  <h3 className="text-lg font-bodoni font-semibold text-deep-green mb-4">Security Settings</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-deep-green font-avenir">AI Verification Required</span>
-                      <div className="w-12 h-6 bg-deep-green rounded-full relative">
-                        <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-deep-green font-avenir">SMS Voting Required</span>
-                      <div className="w-12 h-6 bg-deep-green rounded-full relative">
-                        <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-deep-green font-avenir">Emergency Withdrawal</span>
-                      <div className="w-12 h-6 bg-khaki rounded-full relative">
-                        <div className="w-4 h-4 bg-white rounded-full absolute left-1 top-1"></div>
-                      </div>
-                    </div>
+              {/* Transactions Tab */}
+              {activeTab === "transactions" && (
+                <motion.div
+                  key="transactions"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-6"
+                >
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-bodoni font-bold text-deep-green">Transaction History</h2>
+                    <Button variant="outline" className="border-deep-green text-deep-green hover:bg-deep-green hover:text-ivory font-avenir">
+                      <Download className="mr-2 h-4 w-4" />
+                      Export
+                    </Button>
                   </div>
-                </Card>
 
-                <Button className="w-full bg-deep-green hover:bg-camel text-ivory font-avenir">
-                  Save Settings
-                </Button>
-              </div>
-            )}
-          </div>
-        </section>
+                  <Card className="bg-ivory border border-khaki">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Wallet/Member</TableHead>
+                          <TableHead>Amount</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Hash</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {transactions.map((tx) => (
+                          <TableRow key={tx.id}>
+                            <TableCell className="font-avenir">{tx.date}</TableCell>
+                            <TableCell>
+                              <Badge variant={tx.type === "Contribution" ? "default" : "secondary"}>
+                                {tx.type}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="font-mono">{tx.walletOrMember}</TableCell>
+                            <TableCell className={`font-semibold ${tx.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {tx.amount > 0 ? '+' : ''}{formatCurrency(tx.amount)}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={getStatusColor(tx.status)}>{tx.status}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-sm">{tx.hash}</span>
+                                <ExternalLink className="w-3 h-3 text-deep-green/50" />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </Card>
+                </motion.div>
+              )}
 
-        {/* How It Works */}
-        <section className="py-16 bg-khaki/20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bodoni font-bold text-deep-green text-center mb-12">How Multi-Sig Treasury Works</h2>
+              {/* Proposals Tab */}
+              {activeTab === "proposals" && (
+                <motion.div
+                  key="proposals"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-6"
+                >
+                  <h2 className="text-2xl font-bodoni font-bold text-deep-green">Funding Proposals</h2>
+                  
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {proposals.map((proposal) => (
+                      <Card key={proposal.id} className="p-6 bg-ivory border border-khaki">
+                        <div className="space-y-4">
+                          <div className="flex items-start justify-between">
+                            <h3 className="text-lg font-bodoni font-semibold text-deep-green">{proposal.title}</h3>
+                            <Badge className={getStatusColor(proposal.status)}>{proposal.status}</Badge>
+                          </div>
+                          
+                          <p className="text-deep-green/70 font-avenir text-sm">{proposal.description}</p>
+                          
+                          <div className="space-y-2 text-sm font-avenir">
+                            <div className="flex justify-between">
+                              <span className="text-deep-green/70">Amount:</span>
+                              <span className="text-deep-green font-medium">{formatCurrency(proposal.requestedAmount)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-deep-green/70">Votes:</span>
+                              <span className="text-deep-green font-medium">
+                                {proposal.votesFor} Yes, {proposal.votesAgainst} No
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-deep-green/70">Deadline:</span>
+                              <span className="text-deep-green font-medium">{proposal.deadline}</span>
+                            </div>
+                          </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="w-12 h-12 bg-deep-green/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Shield className="h-6 w-6 text-deep-green" />
-                </div>
-                <h3 className="text-lg font-bodoni font-semibold text-deep-green mb-2">Secure Storage</h3>
-                <p className="text-deep-green/70 font-avenir text-sm">
-                  Funds are stored in a multi-signature wallet requiring multiple approvals for any transaction
-                </p>
-              </div>
+                          {proposal.status === "Voting" && (
+                            <div className="w-full bg-khaki/30 rounded-full h-2">
+                              <div 
+                                className="bg-deep-green h-2 rounded-full transition-all duration-300"
+                                style={{ 
+                                  width: `${(proposal.votesFor / (proposal.votesFor + proposal.votesAgainst)) * 100}%` 
+                                }}
+                              />
+                            </div>
+                          )}
 
-              <div className="text-center">
-                <div className="w-12 h-12 bg-deep-green/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="h-6 w-6 text-deep-green" />
-                </div>
-                <h3 className="text-lg font-bodoni font-semibold text-deep-green mb-2">AI Verification</h3>
-                <p className="text-deep-green/70 font-avenir text-sm">
-                  AI auditor verifies project milestones before funds can be released
-                </p>
-              </div>
+                          {proposal.status === "Passed" && (
+                            <Button 
+                              className="w-full bg-green-600 hover:bg-green-700 text-white font-avenir"
+                              onClick={() => handleReleaseFunds(proposal.id, proposal.requestedAmount, proposal.title)}
+                              disabled={balance < proposal.requestedAmount}
+                            >
+                              <Send className="mr-2 h-4 w-4" />
+                              Release Funds
+                            </Button>
+                          )}
 
-              <div className="text-center">
-                <div className="w-12 h-12 bg-deep-green/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Users className="h-6 w-6 text-deep-green" />
-                </div>
-                <h3 className="text-lg font-bodoni font-semibold text-deep-green mb-2">Community Control</h3>
-                <p className="text-deep-green/70 font-avenir text-sm">
-                  Community members vote via SMS to approve or reject fund releases
-                </p>
-              </div>
-            </div>
+                          {proposal.status === "Voting" && (
+                            <div className="flex gap-2">
+                              <Button size="sm" className="flex-1 bg-green-600 hover:bg-green-700 text-white font-avenir">
+                                <CheckCircle className="mr-1 h-3 w-3" />
+                                Vote Yes
+                              </Button>
+                              <Button size="sm" variant="outline" className="flex-1 border-red-500 text-red-500 hover:bg-red-50 font-avenir">
+                                <XCircle className="mr-1 h-3 w-3" />
+                                Vote No
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </section>
       </main>
@@ -551,4 +551,3 @@ export default function TreasuryPage() {
     </div>
   )
 }
-

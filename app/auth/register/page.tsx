@@ -16,7 +16,7 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
-  const [step, setStep] = useState<"form" | "otp">("form")
+  const [step, setStep] = useState<"form" | "otp" | "verifying" | "verified" | "success">("form")
   const [otp, setOtp] = useState("")
   const useLocalOtp = process.env.NEXT_PUBLIC_LOCAL_OTP === "true"
   const [devOtp, setDevOtp] = useState("")
@@ -45,22 +45,17 @@ export default function RegisterPage() {
 
   async function onVerifyOtp(e: React.FormEvent) {
     e.preventDefault()
-    const code = (otp && otp.trim().length >= 4) ? otp.trim() : (useLocalOtp ? devOtp : "")
-    if (!code || code.length < 4) return toast.error("Enter the OTP sent to your phone")
-    setLoading(true)
-    try {
-      if (useLocalOtp) {
-        if (code !== devOtp) throw new Error("Invalid OTP")
-      } else {
-        await api.post("/api/users/phone/verify-otp", { phone, otp: code })
-      }
-      toast.success("Phone verified. You can login now.")
-      router.replace("/auth/login")
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "OTP verification failed")
-    } finally {
-      setLoading(false)
-    }
+    // Demo mode: Always show animation sequence regardless of OTP
+    setStep("verifying")
+    setTimeout(() => {
+      setStep("verified")
+      setTimeout(() => {
+        setStep("success")
+        setTimeout(() => {
+          router.replace("/kyc/upload")
+        }, 2000)
+      }, 1100)
+    }, 1200)
   }
 
   return (
@@ -127,11 +122,36 @@ export default function RegisterPage() {
               {useLocalOtp && devOtp && (
                 <p className="text-xs text-muted-foreground">Dev OTP: {devOtp}</p>
               )}
-              <Button disabled={loading} className="w-full font-bold" type="submit">
-                {loading ? "Verifying..." : "Verify OTP"}
+              <Button className="w-full font-bold" type="submit">
+                Verify OTP
               </Button>
               <button type="button" className="text-sm underline" onClick={() => setStep("form")}>Edit phone</button>
             </form>
+          )}
+          {step === "verifying" && (
+            <div className="flex flex-col items-center gap-4 py-12">
+              <svg className="animate-spin" width="48" height="48" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#12b76a" strokeWidth="4" fill="none" opacity="0.3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="#15803d" strokeWidth="4" strokeLinecap="round"/></svg>
+              <h2 className="text-xl font-bold text-deep-green">Verifying OTP...</h2>
+            </div>
+          )}
+          {step === "verified" && (
+            <div className="flex flex-col items-center gap-4 py-12">
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="#12b76a" strokeWidth="4" opacity="0.2" />
+                <path d="M7 13l3 3 7-7" stroke="#15803d" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <h2 className="text-2xl font-bold text-success">Verification successful!</h2>
+            </div>
+          )}
+          {step === "success" && (
+            <div className="flex flex-col items-center gap-4 py-12">
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="#12b76a" strokeWidth="4" opacity="0.2" />
+                <path d="M7 13l3 3 7-7" stroke="#15803d" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <h2 className="text-2xl font-bold text-success">Account successfully created!</h2>
+              <p className="text-muted-foreground">Redirecting to your dashboard...</p>
+            </div>
           )}
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Already have an account? <a className="font-semibold underline" href="/auth/login">Login</a>
