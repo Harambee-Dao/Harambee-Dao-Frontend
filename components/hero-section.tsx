@@ -63,13 +63,13 @@ export default function HeroSection() {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left Column - Content */}
           <div
             className={`space-y-8 transition-all duration-1000 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
           >
             <div className="space-y-5">
-              <h1 className="text-6xl lg:text-8xl font-bodoni font-extrabold tracking-tight text-deep-green leading-[1.05] drop-shadow-sm">
+              <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-8xl font-bodoni font-extrabold tracking-tight text-deep-green leading-[1.05] drop-shadow-sm">
                 <span className="inline-block">
                   Stop
                 </span>
@@ -86,7 +86,7 @@ export default function HeroSection() {
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Button
                 size="lg"
                 className="bg-deep-green hover:bg-camel text-ivory px-8 py-4 text-lg group font-avenir"
@@ -125,7 +125,7 @@ export default function HeroSection() {
           <div
             className={`relative transition-all duration-1000 delay-500 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
           >
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {features.map((feature, index) => {
                 const Icon = feature.icon
                 return (

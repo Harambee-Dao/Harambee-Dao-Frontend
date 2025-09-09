@@ -15,9 +15,9 @@ export default function DashboardPage() {
   return (
     <div className={`min-h-screen w-full ${BG} flex flex-col`}>
       <Navbar tab={tab} setTab={setTab} />
-      <div className="flex flex-1">
+      <div className="flex flex-1 w-full">
         <Sidebar tab={tab} setTab={setTab} />
-        <main className="flex-1 p-3 md:p-8 flex justify-center items-start">
+        <main className="flex-1 p-2 sm:p-4 md:p-8 flex justify-center items-start w-full">
           <AnimatePresence>
             <motion.div
               key={tab}
@@ -86,7 +86,7 @@ function UserAvatar() {
 }
 function Sidebar({ tab, setTab }: any) {
   return (
-    <aside className={`hidden md:flex flex-col w-52 ${CARD_BG} mr-8 mt-6 rounded-lg`}>
+    <aside className={`hidden md:flex flex-col md:w-52 ${CARD_BG} md:mr-8 mt-6 rounded-lg`}>
       <nav className="flex flex-col gap-4 p-4">
         {menu.map(m => (
           <button key={m} className={`font-medium py-1 text-left ${tab===m?"text-camel":"text-deep-green hover:text-camel"}`} onClick={()=>setTab(m)}>{m}</button>
@@ -98,7 +98,7 @@ function Sidebar({ tab, setTab }: any) {
 // --- Dashboard Overview/Welcome ---
 function DashboardOverview() {
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
       <WelcomeStatusCard />
       <TreasuryMiniWidget />
       <ProposalsMiniWidget />
@@ -251,7 +251,7 @@ function TreasurySection() {
           </LineChart>
         </ResponsiveContainer>
       </Card>
-      <div className="flex gap-4 mb-4">
+      <div className="flex flex-col sm:flex-row gap-4 mb-4">
         <Button className="bg-deep-green text-ivory">Contribute</Button>
         <Button className="bg-camel text-deep-green">Export to CSV/PDF</Button>
       </div>

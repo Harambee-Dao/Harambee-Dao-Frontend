@@ -6,14 +6,14 @@ export function AboutSection() {
     <section className="py-24 bg-khaki/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-5 mb-16">
-          <h2 className="text-5xl lg:text-6xl font-bodoni font-extrabold tracking-tight text-deep-green">Securing Community Savings</h2>
-          <p className="text-xl lg:text-2xl text-deep-green/90 max-w-3xl mx-auto leading-relaxed font-avenir font-semibold">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bodoni font-extrabold tracking-tight text-deep-green">Securing Community Savings</h2>
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-deep-green/90 max-w-3xl mx-auto leading-relaxed font-avenir font-semibold">
             Harambee DAO revolutionizes community savings groups (chamas/ROSCAs) by eliminating governance failures and
             theft through cutting-edge AI auditing and blockchain security.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
           <Card className="p-8 text-center space-y-6 hover:shadow-xl transition-all duration-300 card-hover">
             <div className="w-16 h-16 bg-deep-green/10 rounded-full flex items-center justify-center mx-auto">
               <Users className="w-8 h-8 text-deep-green" />
