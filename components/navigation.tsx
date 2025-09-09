@@ -27,7 +27,7 @@ export default function Navigation() {
         <div className="relative flex items-center justify-center">
           <div className="w-14 h-14 bg-deep-green rounded-full flex items-center justify-center shadow-lg">
             <Image
-      src="/harambee dao.jpg"
+      src="/harambee dao .jpg"
       alt="Harambee Logo"
       width={56}   // match w-14
       height={56}  // match h-14
@@ -85,7 +85,7 @@ export default function Navigation() {
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 bg-deep-green rounded-full flex items-center justify-center shadow-lg">
                   <Image
-                src="/harambee dao.jpg"
+                src="/harambee dao .jpg"
                 alt="Harambee Logo"
                 width={40}   // match w-10
                 height={40}  // match h-10
