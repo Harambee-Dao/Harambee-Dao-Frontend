@@ -87,8 +87,8 @@ export default function Navigation() {
                   <Image
                 src="/harambee dao .jpg"
                 alt="Harambee Logo"
-                width={40}   // match w-10
-                height={40}  // match h-10
+                width={50}   // match w-10
+                height={50}  // match h-10
                 className="object-cover"
                 />
                 </div>
